@@ -63,15 +63,24 @@
                  (unless (eq character #\.)
                    (write-char character out))))))))
 
+
+(defun add-padding (base-64-string)
+  (let* ((block-size 4)
+         (num-chars-to-add (- block-size (rem (length base-64-string)
+                                              block-size))))
+    (if (= num-chars-to-add block-size)
+        base-64-string
+        (concatenate 'string
+                     base-64-string
+                     (make-array num-chars-to-add
+                                 :element-type 'character
+                                 :initial-element #\.)))))
+
 (defun base64-decode (base-64-string)
   "Takes a base64-uri string and return an array of octets"
   (base64-string-to-usb8-array
    ;; Re-pad the string, or CL-BASE64 will get confused
-   (concatenate 'string
-                base-64-string
-                (make-array (rem (length base-64-string) 4)
-                            :element-type 'character
-                            :initial-element #\.))
+   (add-padding base-64-string)
    :uri t))
 
 (defun issue (claims &key algorithm secret issuer subject audience
